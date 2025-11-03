@@ -4,6 +4,7 @@ import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
 import LandingPages from "./LandingPages";
 import Home from "../view/home/Home";
+import Header from "../components/Header";
 
 
 
@@ -17,7 +18,7 @@ function AppContent() {
 
     return (
         <>
-            {/* {user ? <Header /> : ""} */}
+            <Header />
             <Routes>
                 <Route element={<LandingPages />}>
                     {/* <Route path="/" element={<Home />} /> */}
