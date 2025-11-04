@@ -4,16 +4,14 @@ import {
   Navigate,
   Route,
   Routes,
-  useLocation,
 } from "react-router-dom";
 import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
-import LandingPages from "./LandingPages";
 import Home from "../view/home/Home";
 import Login from "../view/auth/Login";
 import Register from "../view/auth/Register";
-import Header from "../components/Header";
 import { Dashboard } from "../view/home/dashboard";
+import { About } from "../view/home/About";
 
 // Supervisor
 import DashboardSupervisor from "./supervisor/DasboardSupervisor";
@@ -23,16 +21,12 @@ import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
 import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 
 function AppContent() {
-  const location = useLocation();
-
-  const hideBotPaths = ["/login", "/registro"];
-  const shouldShowBot = !hideBotPaths.includes(location.pathname);
 
   const publicRoutes = [
     { path: "/", element: <Home /> },
     { path: "/login", element: <Login /> },
     { path: "/registro", element: <Register /> },
-    // Agrega más rutas públicas aquí
+    { path: "/about", element: <About /> },
   ];
 
   const privateRoutes = [
@@ -53,7 +47,6 @@ function AppContent() {
 
   return (
     <>
-      <Header />
       <Routes>
         {/* RUTAS PÚBLICAS */}
         <Route element={<PublicRouter />}>
@@ -84,9 +77,6 @@ function AppContent() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      {/* Opcional */}
-      {/* {shouldShowBot && <Bot />} */}
     </>
   );
 }
