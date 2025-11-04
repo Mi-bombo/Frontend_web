@@ -60,6 +60,7 @@ export const usersService = () => {
         body: JSON.stringify({ nombre: name, email, password }),
       });
       const data = await response.json().catch(() => ({}));
+      console.log(data);
       if (response.ok) {
         return { success: true, data };
       } else {

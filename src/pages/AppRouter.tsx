@@ -14,6 +14,7 @@ import Login from "../view/auth/Login";
 import Register from "../view/auth/Register";
 import Header from "../components/Header";
 import { Dashboard } from "../view/home/dashboard";
+import Map from "../view/home/Map";
 
 function AppContent() {
   const location = useLocation();
@@ -31,6 +32,7 @@ function AppContent() {
 
   const privateRoutes = [
     { path: "/dashboard", element: <Dashboard /> },
+    { path: "/map", element: <Map /> },
     // Agrega más rutas privadas aquí
   ];
 
