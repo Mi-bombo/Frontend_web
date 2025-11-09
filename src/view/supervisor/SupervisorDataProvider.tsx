@@ -9,20 +9,23 @@ import {
 } from "react";
 import { authenticated } from "../../context/AppContext";
 import { supervisorService } from "../../services/turnos/supervisor.service";
-import type {
-  Chofer,
-  TurnoAsignado,
-} from "../../services/turnos/types";
+import type { Chofer, TurnoAsignado } from "../../services/turnos/types";
 
 type SupervisorDataState = {
   choferes: Chofer[];
   turnos: TurnoAsignado[];
   loading: boolean;
+  loadingChoferes: boolean;
+  loadingTurnos: boolean;
   error?: string;
+  token?: string;
+  isSupervisor: boolean;
 };
 
 type SupervisorDataContextValue = SupervisorDataState & {
   refresh: () => Promise<void>;
+  refreshChoferes: () => Promise<void>;
+  refreshTurnos: () => Promise<void>;
 };
 
 const SupervisorDataContext = createContext<
@@ -39,12 +42,7 @@ const extractToken = (session: any): string | undefined => {
       }
     }
   }
-  return (
-    session.token ??
-    session.accessToken ??
-    session.jwt ??
-    session.User?.token
-  );
+  return session.token ?? session.accessToken ?? session.jwt ?? session.User?.token;
 };
 
 const extractUser = (session: any) => {
@@ -58,65 +56,92 @@ const extractUser = (session: any) => {
 export const SupervisorDataProvider = ({ children }: { children: ReactNode }) => {
   const ctx = authenticated();
   const session = (ctx as any)?.user;
-  const [state, setState] = useState<SupervisorDataState>({
-    choferes: [],
-    turnos: [],
-    loading: true,
-  });
+  const [choferes, setChoferes] = useState<Chofer[]>([]);
+  const [turnos, setTurnos] = useState<TurnoAsignado[]>([]);
+  const [loadingChoferes, setLoadingChoferes] = useState(true);
+  const [loadingTurnos, setLoadingTurnos] = useState(true);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const token = extractToken(session);
   const user = extractUser(session);
-  const isSupervisor =
-    (user?.role ?? user?.rol_id) === 1 || user?.role === "supervisor";
+  const role = user?.role ?? user?.rol_id;
+  const isSupervisor = role === 1 || role === "supervisor";
 
-  const fetchData = useCallback(async () => {
-    if (!isSupervisor) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: "No autorizado para ver datos de supervisor.",
-      }));
+  const fetchChoferes = useCallback(async () => {
+    if (!isSupervisor || !token) {
+      setChoferes([]);
+      setLoadingChoferes(false);
+      if (isSupervisor && !token) {
+        setError("No se encontró el token de autenticación.");
+      }
       return;
     }
-
-    if (!token) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: "No se encontró el token de autenticación.",
-      }));
-      return;
+    setLoadingChoferes(true);
+    const result = await supervisorService.getChoferes(token);
+    if (result.success) {
+      setChoferes(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setState((prev) => ({ ...prev, loading: true, error: undefined }));
-
-    const [choferRes, turnosRes] = await Promise.all([
-      supervisorService.getChoferes(token),
-      supervisorService.getTurnos(token),
-    ]);
-
-    setState({
-      choferes: choferRes.success ? choferRes.data : [],
-      turnos: turnosRes.success ? turnosRes.data : [],
-      loading: false,
-      error: choferRes.success
-        ? turnosRes.success
-          ? undefined
-          : turnosRes.error
-        : choferRes.error,
-    });
+    setLoadingChoferes(false);
   }, [isSupervisor, token]);
 
+  const fetchTurnos = useCallback(async () => {
+    if (!isSupervisor || !token) {
+      setTurnos([]);
+      setLoadingTurnos(false);
+      if (isSupervisor && !token) {
+        setError("No se encontró el token de autenticación.");
+      }
+      return;
+    }
+    setLoadingTurnos(true);
+    const result = await supervisorService.getTurnos(token);
+    if (result.success) {
+      setTurnos(result.data);
+    } else {
+      setError(result.error);
+    }
+    setLoadingTurnos(false);
+  }, [isSupervisor, token]);
+
+  const refresh = useCallback(async () => {
+    setError(undefined);
+    await Promise.all([fetchChoferes(), fetchTurnos()]);
+  }, [fetchChoferes, fetchTurnos]);
+
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    refresh();
+  }, [refresh]);
 
   const value = useMemo(
     () => ({
-      ...state,
-      refresh: fetchData,
+      choferes,
+      turnos,
+      loading: loadingChoferes || loadingTurnos,
+      loadingChoferes,
+      loadingTurnos,
+      error: !isSupervisor
+        ? "No autorizado para ver datos de supervisor."
+        : error,
+      token,
+      isSupervisor,
+      refresh,
+      refreshChoferes: fetchChoferes,
+      refreshTurnos: fetchTurnos,
     }),
-    [state, fetchData]
+    [
+      choferes,
+      turnos,
+      loadingChoferes,
+      loadingTurnos,
+      error,
+      token,
+      isSupervisor,
+      refresh,
+      fetchChoferes,
+      fetchTurnos,
+    ]
   );
 
   return (

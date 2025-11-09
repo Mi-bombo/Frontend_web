@@ -1,7 +1,12 @@
 import { useSupervisorData } from "../../../view/supervisor/SupervisorDataProvider";
 
 export default function ListaUsuarios() {
-  const { choferes, loading, error, refresh } = useSupervisorData();
+  const {
+    choferes,
+    loadingChoferes,
+    error,
+    refreshChoferes,
+  } = useSupervisorData();
 
   return (
     <div className="space-y-4 p-6">
@@ -14,7 +19,7 @@ export default function ListaUsuarios() {
         </div>
         <button
           type="button"
-          onClick={refresh}
+          onClick={refreshChoferes}
           className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
         >
           Recargar
@@ -37,7 +42,7 @@ export default function ListaUsuarios() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {loadingChoferes ? (
               <tr>
                 <td colSpan={3} className="p-4 text-center text-slate-500">
                   Cargando usuarios...

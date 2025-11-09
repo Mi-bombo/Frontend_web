@@ -16,6 +16,7 @@ import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
 import ListaLineas from "./supervisor/Lineas/ListaLineas";
 import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
 import SupervisorLayout from "../view/supervisor/SupervisorLayout";
+import GestionTurnos from "./supervisor/Turnos/GestionTurnos";
 
 function AppContent() {
   const publicRoutes = [
@@ -37,6 +38,7 @@ function AppContent() {
         { index: true, element: <DashboardSupervisor /> },
         { path: "usuarios", element: <ListaUsuarios /> },
         { path: "lineas", element: <ListaLineas /> },
+        { path: "turnos", element: <GestionTurnos /> },
         { path: "obstrucciones", element: <PanelObstrucciones /> },
       ],
     },

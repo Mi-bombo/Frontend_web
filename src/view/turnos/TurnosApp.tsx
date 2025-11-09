@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AuthSection } from "../../components/turnos/AuthSection";
+
 import { SupervisorPanel } from "../../components/turnos/SupervisorPanel";
 import { ChoferPanel } from "../../components/turnos/ChoferPanel";
 import { ResponseMessage } from "../../components/turnos/ResponseMessage";
@@ -271,14 +271,6 @@ export default function TurnosApp() {
   if (loading.auth) {
     bodyContent = (
       <p className="text-sm text-gray-600">Verificando sesión...</p>
-    );
-  } else if (!session?.User) {
-    bodyContent = (
-      <AuthSection
-        onRegister={handleRegister}
-        onLogin={handleLogin}
-        message={message}
-      />
     );
   } else if (isSupervisor) {
     bodyContent = (

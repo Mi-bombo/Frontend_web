@@ -16,7 +16,12 @@ const getSeverity = (dia: string): Obstruccion["severidad"] => {
 };
 
 export default function PanelObstrucciones() {
-  const { turnos, loading, error, refresh } = useSupervisorData();
+  const {
+    turnos,
+    loadingTurnos,
+    error,
+    refreshTurnos,
+  } = useSupervisorData();
 
   const obstrucciones = useMemo<Obstruccion[]>(
     () =>
@@ -41,7 +46,7 @@ export default function PanelObstrucciones() {
         </div>
         <button
           type="button"
-          onClick={refresh}
+          onClick={refreshTurnos}
           className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
         >
           Actualizar
@@ -65,7 +70,7 @@ export default function PanelObstrucciones() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {loadingTurnos ? (
               <tr>
                 <td colSpan={4} className="p-4 text-center text-slate-500">
                   Consultando turnos...
