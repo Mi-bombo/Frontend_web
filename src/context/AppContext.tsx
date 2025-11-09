@@ -6,7 +6,7 @@ type MinimalUser = {
   name?: string;
   last_name?: string;
   email?: string;
-  role?: string;
+  role?: number;
 };
 
 export type AuthState =

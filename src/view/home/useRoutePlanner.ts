@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
-import L, {
-  LatLngExpression,
-  LatLngTuple,
-  DivIcon,
-} from "leaflet";
+import L from "leaflet";
+import type { LatLngExpression, LatLngTuple, DivIcon } from "leaflet";
 
 export type ActiveSelection = "start" | "end" | null;
 

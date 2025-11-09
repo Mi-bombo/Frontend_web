@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { authenticated } from "../context/AppContext";
+import { usersService } from "../services/user.service";
 
 type NavLinkItem = {
   to: string;
@@ -13,25 +15,67 @@ type NavLinkStatus = {
   isTransitioning: boolean;
 };
 
+const mapRole = (user: any) => {
+  if (!user) return undefined;
+  if (user.role) return user.role;
+  if (typeof user.rol_id === "number") {
+    if (user.rol_id === 1) return "supervisor";
+    if (user.rol_id === 2) return "chofer";
+  }
+  return undefined;
+};
+
+const extractUser = (session: any) => {
+  if (!session) return null;
+  if (Array.isArray(session)) {
+    const arrayUser = session[1]?.user ?? session[0]?.user;
+    if (arrayUser) return arrayUser;
+  }
+  return session.User ?? session.user ?? session;
+};
+
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const handleSubmit = () => {
-    // await logoutUser();
+  const ctx = authenticated();
+  const session = (ctx as any)?.user;
+  const loading = (ctx as any)?.loading;
+  const ctxLogout = (ctx as any)?.logoutUser;
+  const serviceLogout = usersService().logoutUser;
+  const logoutUser = ctxLogout ?? serviceLogout;
+
+  const user = extractUser(session);
+  const role = mapRole(user);
+  const isLoggedIn = Boolean(session?.token || user);
+
+  const handleSubmit = async () => {
+    if (isLoggedIn) {
+      await logoutUser();
+    }
     navigate("/");
   };
 
-  const navLinks = useMemo<NavLinkItem[]>(
-    () => [
-      { to: "/", label: "Inicio", end: true },
-      { to: "/dashboard", label: "Dashboard" },
-      { to: "/map", label: "Mapa" },
-    ],
-    []
-  );
+  const navLinks = useMemo<NavLinkItem[]>(() => {
+    if (!isLoggedIn) {
+      return [
+        { to: "/", label: "Inicio", end: true },
+        { to: "/about", label: "Sobre nosotros" },
+      ];
+    }
+    if (role === "supervisor") {
+      return [{ to: "/supervisor", label: "Administrar" }];
+    }
+    if (role === "chofer") {
+      return [
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/turnos", label: "Turnos" },
+      ];
+    }
+    return [{ to: "/", label: "Inicio", end: true }];
+  }, [isLoggedIn, role]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,6 +119,8 @@ export default function Header() {
         : "text-slate-700 hover:bg-slate-100 hover:text-blue-600"
     }`;
 
+  if (loading) return null;
+
   return (
     <header
       className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${
@@ -101,13 +147,15 @@ export default function Header() {
               {label}
             </NavLink>
           ))}
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="ml-4 inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
-          >
-            Cerrar sesión
-          </button>
+          {isLoggedIn && (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="ml-4 inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
+            >
+              Cerrar sesión
+            </button>
+          )}
         </nav>
 
         <button
@@ -150,13 +198,15 @@ export default function Header() {
                 {label}
               </NavLink>
             ))}
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
-            >
-              Cerrar sesión
-            </button>
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
+              >
+                Cerrar sesión
+              </button>
+            )}
           </nav>
         </div>
       )}

@@ -84,6 +84,7 @@ export const usersService = () => {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         return setUser(data);
       } else {
         return setUser(null);

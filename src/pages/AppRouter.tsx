@@ -1,67 +1,79 @@
 import { Suspense } from "react";
-import {
-  BrowserRouter,
-  Navigate,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
-import LandingPages from "./LandingPages";
 import Home from "../view/home/Home";
 import Login from "../view/auth/Login";
 import Register from "../view/auth/Register";
-import Header from "../components/Header";
 import { Dashboard } from "../view/home/dashboard";
-import Map from "../view/home/Map";
+import { About } from "../view/home/About";
+import TurnosApp from "../view/turnos/TurnosApp";
+import Header from "../components/Navbar";
+
+// Supervisor
+import DashboardSupervisor from "./supervisor/DasboardSupervisor";
+import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
+import ListaLineas from "./supervisor/Lineas/ListaLineas";
+import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
+import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 
 function AppContent() {
-  const location = useLocation();
-
-  const hideBotPaths = ["/login", "/registro"];
-  const shouldShowBot = !hideBotPaths.includes(location.pathname);
-
-  // Template de rutas para fácil edición
   const publicRoutes = [
     { path: "/", element: <Home /> },
     { path: "/login", element: <Login /> },
     { path: "/registro", element: <Register /> },
-    // Agrega más rutas públicas aquí
+    { path: "/about", element: <About /> },
   ];
 
   const privateRoutes = [
     { path: "/dashboard", element: <Dashboard /> },
-    { path: "/map", element: <Map /> },
-    // Agrega más rutas privadas aquí
+    { path: "/turnos", element: <TurnosApp /> },
+
+    // Grupo de rutas del supervisor (layout + subrutas)
+    {
+      path: "/supervisor",
+      element: <SupervisorLayout />,
+      children: [
+        { index: true, element: <DashboardSupervisor /> },
+        { path: "usuarios", element: <ListaUsuarios /> },
+        { path: "lineas", element: <ListaLineas /> },
+        { path: "obstrucciones", element: <PanelObstrucciones /> },
+      ],
+    },
   ];
 
   return (
     <>
-      <Header />
       <Routes>
-        {/* Sección de landing si la usas para layouts o páginas estáticas */}
-        {/* <Route element={<LandingPages />} /> */}
-
-        {/* Rutas públicas: solo para usuarios sin sesión */}
+        {/* RUTAS PÚBLICAS */}
         <Route element={<PublicRouter />}>
           {publicRoutes.map(({ path, element }) => (
             <Route key={path} path={path} element={element} />
           ))}
         </Route>
 
-        {/* Rutas privadas: requieren sesión */}
+        {/* RUTAS PRIVADAS */}
         <Route element={<PrivateRouter />}>
-          {privateRoutes.map(({ path, element }) => (
-            <Route key={path} path={path} element={element} />
-          ))}
+          {privateRoutes.map(({ path, element, children }) =>
+            children ? (
+              // Rutas anidadas (ej: supervisor)
+              <Route key={path} path={path} element={element}>
+                {children.map(({ path: childPath, element: childEl, index }) =>
+                  index ? (
+                    <Route key="index" index element={childEl} />
+                  ) : (
+                    <Route key={childPath} path={childPath} element={childEl} />
+                  )
+                )}
+              </Route>
+            ) : (
+              <Route key={path} path={path} element={element} />
+            )
+          )}
         </Route>
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {/* {user ? <Footer /> : ""}
-      {shouldShowBot && <Bot />} */}
     </>
   );
 }
@@ -69,6 +81,7 @@ function AppContent() {
 export const AppRouter = () => (
   <Suspense fallback={<div>Loading...</div>}>
     <BrowserRouter>
+      <Header />
       <AppContent />
     </BrowserRouter>
   </Suspense>
