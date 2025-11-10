@@ -16,7 +16,7 @@ import { About } from "../view/home/About";
 // Supervisor
 import DashboardSupervisor from "./supervisor/DasboardSupervisor";
 import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
-import ListaLineas from "./supervisor/Lineas/ListaLineas";
+import { CrudLineas } from "./supervisor/Lineas/CrudLineas";
 import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
 import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 
@@ -27,6 +27,7 @@ function AppContent() {
     { path: "/login", element: <Login /> },
     { path: "/registro", element: <Register /> },
     { path: "/about", element: <About /> },
+    { path: "/lin", element: <CrudLineas /> },
   ];
 
   const privateRoutes = [
@@ -39,7 +40,7 @@ function AppContent() {
       children: [
         { index: true, element: <DashboardSupervisor /> },
         { path: "usuarios", element: <ListaUsuarios /> },
-        { path: "lineas", element: <ListaLineas /> },
+        { path: "lineas", element: <CrudLineas /> },
         { path: "obstrucciones", element: <PanelObstrucciones /> },
       ],
     },
