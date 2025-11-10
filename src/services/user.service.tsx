@@ -1,5 +1,9 @@
 import { useState } from "react";
-export const Url = "http://localhost:4000/auth/";
+
+const BASE = (import.meta.env.VITE_AUTH_API ?? "http://127.0.0.1:2000/auth")
+  .replace(/\/+$/, "");
+
+export const Url = `${BASE}/`;
 
 interface IUser {
   name: string;

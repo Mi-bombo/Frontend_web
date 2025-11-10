@@ -29,6 +29,8 @@ export default function GestionTurnos() {
     isSupervisor,
     refreshChoferes,
     refreshTurnos,
+    catalogoTurnos,
+    loadingCatalogo,
   } = useSupervisorData();
 
   const ctx = authenticated();
@@ -40,23 +42,16 @@ export default function GestionTurnos() {
   const [choferToEdit, setChoferToEdit] = useState<Chofer | null>(null);
   const [choferToAssign, setChoferToAssign] = useState<Chofer | null>(null);
 
-  const ensureToken = (): string | null => {
-    if (!token) {
-      setActionError("No se encontró el token de autenticación.");
-      return null;
-    }
+  const ensureAuth = () => {
     setActionError(null);
-    return token;
+    return true;
   };
 
   const handleCreateChofer = async (
     payload: CreateChoferPayload
   ): Promise<OperationResult> => {
-    const authToken = ensureToken();
-    if (!authToken) {
-      return { success: false, error: "Token requerido." };
-    }
-    const result = await supervisorService.createChofer(payload, authToken);
+    ensureAuth();
+    const result = await supervisorService.createChofer(payload, token);
     if (result.success) {
       setMessage("Chofer creado correctamente.");
       await refreshChoferes();
@@ -70,15 +65,8 @@ export default function GestionTurnos() {
     turnoId: number,
     payload: UpdateTurnoPayload
   ): Promise<OperationResult> => {
-    const authToken = ensureToken();
-    if (!authToken) {
-      return { success: false, error: "Token requerido." };
-    }
-    const result = await supervisorService.updateTurno(
-      turnoId,
-      payload,
-      authToken
-    );
+    ensureAuth();
+    const result = await supervisorService.updateTurno(turnoId, payload, token);
     if (result.success) {
       setMessage("Turno actualizado.");
       await refreshTurnos();
@@ -88,11 +76,10 @@ export default function GestionTurnos() {
     return { success: false, error: result.error };
   };
 
-  const handleDeleteTurno = async (turnoId: number) => {
+  const handleDeleteTurno = async (turno: TurnoAsignado) => {
     if (!window.confirm("¿Eliminar este turno asignado?")) return;
-    const authToken = ensureToken();
-    if (!authToken) return;
-    const result = await supervisorService.deleteTurno(turnoId, authToken);
+    ensureAuth();
+    const result = await supervisorService.deleteTurno(turno.id, token);
     if (result.success) {
       setMessage("Turno eliminado.");
       await refreshTurnos();
@@ -105,15 +92,8 @@ export default function GestionTurnos() {
     choferId: number,
     payload: AssignTurnoPayload
   ): Promise<OperationResult> => {
-    const authToken = ensureToken();
-    if (!authToken) {
-      return { success: false, error: "Token requerido." };
-    }
-    const result = await supervisorService.assignTurno(
-      choferId,
-      payload,
-      authToken
-    );
+    ensureAuth();
+    const result = await supervisorService.assignTurno(choferId, payload, token);
     if (result.success) {
       setMessage("Turno asignado correctamente.");
       await refreshTurnos();
@@ -127,15 +107,8 @@ export default function GestionTurnos() {
     choferId: number,
     payload: UpdateChoferPayload
   ): Promise<OperationResult> => {
-    const authToken = ensureToken();
-    if (!authToken) {
-      return { success: false, error: "Token requerido." };
-    }
-    const result = await supervisorService.updateChofer(
-      choferId,
-      payload,
-      authToken
-    );
+    ensureAuth();
+    const result = await supervisorService.updateChofer(choferId, payload, token);
     if (result.success) {
       setMessage("Chofer actualizado.");
       await refreshChoferes();
@@ -147,12 +120,8 @@ export default function GestionTurnos() {
 
   const handleDeleteChofer = async (choferId: number) => {
     if (!window.confirm("¿Eliminar este chofer?")) return;
-    const authToken = ensureToken();
-    if (!authToken) return;
-    const result = await supervisorService.deleteChofer(
-      choferId,
-      authToken
-    );
+    ensureAuth();
+    const result = await supervisorService.deleteChofer(choferId, token);
     if (result.success) {
       setMessage("Chofer eliminado.");
       await refreshChoferes();
@@ -167,10 +136,16 @@ export default function GestionTurnos() {
     }
   };
 
+  const refreshAll = async () => {
+    setActionError(null);
+    await Promise.all([refreshChoferes(), refreshTurnos()]);
+    setMessage("Datos actualizados.");
+  };
+
   if (!isSupervisor) {
     return (
       <div className="p-6">
-        <p className="rounded border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm text-yellow-900">
+        <p className="px-4 py-2 text-sm text-yellow-900 border border-yellow-200 rounded bg-yellow-50">
           Necesitas permisos de supervisor para acceder a esta sección.
         </p>
       </div>
@@ -178,14 +153,39 @@ export default function GestionTurnos() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="p-6 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Gestión de turnos</h1>
+          <p className="text-sm text-slate-500">
+            Administra choferes, asignaciones y actualizaciones.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 text-xs rounded-full bg-slate-100 text-slate-700">
+            Choferes: <strong>{choferes.length}</strong>
+          </span>
+          <span className="px-3 py-1 text-xs rounded-full bg-slate-100 text-slate-700">
+            Turnos: <strong>{turnos.length}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={refreshAll}
+            className="px-4 py-2 text-sm font-semibold text-white transition-colors bg-blue-600 rounded-full shadow cursor-pointer hover:bg-blue-700 disabled:opacity-50 disabled:cursor-default"
+            disabled={loadingChoferes || loadingTurnos}
+          >
+            {loadingChoferes || loadingTurnos ? "Actualizando..." : "Actualizar todo"}
+          </button>
+        </div>
+      </div>
+
       {error && (
-        <p className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">
           {error}
         </p>
       )}
       {actionError && (
-        <p className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">
+        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">
           {actionError}
         </p>
       )}
@@ -204,12 +204,14 @@ export default function GestionTurnos() {
         onCreateChofer={handleCreateChofer}
       />
 
-      <ResponseMessage message={message} />
+      <ResponseMessage message={message} onClose={() => setMessage(null)} />
 
       <UpdateTurnoModal
         turno={turnoToEdit}
         onClose={() => setTurnoToEdit(null)}
         onSave={handleUpdateTurno}
+        catalogoTurnos={catalogoTurnos}
+        loadingCatalogo={loadingCatalogo}
       />
 
       <UpdateChoferModal
@@ -222,6 +224,8 @@ export default function GestionTurnos() {
         chofer={choferToAssign}
         onClose={() => setChoferToAssign(null)}
         onAssign={handleAssignTurno}
+        catalogoTurnos={catalogoTurnos}
+        loadingCatalogo={loadingCatalogo}
       />
     </div>
   );

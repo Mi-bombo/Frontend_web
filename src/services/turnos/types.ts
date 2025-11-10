@@ -42,28 +42,37 @@ export interface UpdateChoferPayload {
   password?: string;
 }
 
-export interface TurnoAsignado {
+export type TurnoAsignado = {
   id: number;
   id_turno: number;
-  dia: string;
+  id_user: number;
   nombre_turno: string;
   nombre_chofer: string;
-}
+  dia?: string;     
+  fecha?: string;   
+};
 
-export interface UpdateTurnoPayload {
+export type UpdateTurnoPayload = {
   id_turno: number;
-  dia: string;
-}
+  fecha: string;
+};
 
-export interface AssignTurnoPayload {
+export type AssignTurnoPayload = {
   id_turno: number;
-  dia: string;
-}
+  fecha: string; 
+};
 
 export interface TurnoChofer {
   id?: number;
   nombre_turno: string;
-  dia: string;
+  fecha?: string;
+  dia?: string; 
+}
+
+
+export interface TurnoCatalogo {
+  id: number;
+  nombre: string;
 }
 
 export type ApiResult<T> =

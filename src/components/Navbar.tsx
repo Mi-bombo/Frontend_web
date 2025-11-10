@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { authenticated } from "../context/AppContext";
-import { usersService } from "../services/user.service";
 
 type NavLinkItem = {
   to: string;
@@ -44,8 +43,7 @@ export default function Header() {
   const session = (ctx as any)?.user;
   const loading = (ctx as any)?.loading;
   const ctxLogout = (ctx as any)?.logoutUser;
-  const serviceLogout = usersService().logoutUser;
-  const logoutUser = ctxLogout ?? serviceLogout;
+  const logoutUser = ctxLogout;
 
   const user = extractUser(session);
   const role = mapRole(user);
@@ -126,10 +124,10 @@ export default function Header() {
       className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${
         scrolled
           ? "bg-white/90 shadow-lg shadow-slate-900/10 backdrop-blur"
-          : "bg-gradient-to-b from-slate-950/60 via-slate-900/40 to-transparent"
+          : "bg-linear-to-b from-slate-950/60 via-slate-900/40 to-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -141,7 +139,7 @@ export default function Header() {
           <span className={taglineClass}>vosave</span>
         </div>
 
-        <nav className="hidden items-center gap-2 md:flex">
+        <nav className="items-center hidden gap-2 md:flex">
           {navLinks.map(({ to, label, end }) => (
             <NavLink key={to} to={to} end={end} className={linkClasses}>
               {label}
@@ -151,7 +149,7 @@ export default function Header() {
             <button
               type="button"
               onClick={handleSubmit}
-              className="ml-4 inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 ml-4 text-sm font-semibold text-white transition bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-700"
             >
               Cerrar sesión
             </button>
@@ -160,7 +158,7 @@ export default function Header() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/20 text-white shadow-md shadow-slate-900/30 backdrop-blur transition hover:bg-white/30 hover:text-blue-100 md:hidden"
+          className="inline-flex items-center justify-center w-10 h-10 text-white transition border rounded-full shadow-md border-white/10 bg-white/20 shadow-slate-900/30 backdrop-blur hover:bg-white/30 hover:text-blue-100 md:hidden"
           onClick={() => setIsMenuOpen((prev) => !prev)}
           aria-label="Toggle navigation menu"
         >
@@ -171,7 +169,7 @@ export default function Header() {
             viewBox="0 0 24 24"
             strokeWidth={1.8}
             stroke="currentColor"
-            className="h-6 w-6"
+            className="w-6 h-6"
           >
             {isMenuOpen ? (
               <path
@@ -191,7 +189,7 @@ export default function Header() {
       </div>
 
       {isMenuOpen && (
-        <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/95 p-4 text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur md:hidden">
+        <div className="p-4 mx-4 mb-4 border shadow-lg rounded-2xl border-white/10 bg-white/95 text-slate-700 shadow-slate-900/10 backdrop-blur md:hidden">
           <nav className="flex flex-col gap-2">
             {navLinks.map(({ to, label, end }) => (
               <NavLink key={to} to={to} end={end} className={mobileLinkClasses}>
@@ -202,7 +200,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
+                className="inline-flex items-center justify-center px-4 py-2 mt-2 text-sm font-semibold text-white transition bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-700"
               >
                 Cerrar sesión
               </button>

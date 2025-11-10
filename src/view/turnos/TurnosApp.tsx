@@ -21,6 +21,7 @@ import type {
   TurnoChofer,
   UpdateChoferPayload,
   UpdateTurnoPayload,
+  TurnoCatalogo,
 } from "../../services/turnos/types";
 
 type OperationResult = { success: boolean; error?: string };
@@ -30,6 +31,7 @@ const initialLoadingState = {
   turnos: false,
   choferes: false,
   misTurnos: false,
+  catalogo: false,
 };
 
 export default function TurnosApp() {
@@ -39,6 +41,7 @@ export default function TurnosApp() {
   const [turnos, setTurnos] = useState<TurnoAsignado[]>([]);
   const [choferes, setChoferes] = useState<Chofer[]>([]);
   const [misTurnos, setMisTurnos] = useState<TurnoChofer[]>([]);
+  const [catalogoTurnos, setCatalogoTurnos] = useState<TurnoCatalogo[]>([]);
   const [loading, setLoading] = useState(initialLoadingState);
   const [turnoToEdit, setTurnoToEdit] = useState<TurnoAsignado | null>(null);
   const [choferToEdit, setChoferToEdit] = useState<Chofer | null>(null);
@@ -49,10 +52,7 @@ export default function TurnosApp() {
     setLoading((prev) => ({ ...prev, [key]: value }));
   };
 
-  const showError = (
-    error?: string,
-    fallback = "Ocurrió un error inesperado."
-  ) => {
+  const showError = (error?: string, fallback = "Ocurrió un error inesperado.") => {
     setMessage(error ?? fallback);
   };
 
@@ -74,20 +74,15 @@ export default function TurnosApp() {
 
   useEffect(() => {
     refreshSession();
-    return () => {
-      eventSourceRef.current?.close();
-    };
+    return () => eventSourceRef.current?.close();
   }, [refreshSession]);
 
   const fetchTurnos = useCallback(async () => {
     if (!token) return;
     setLoadingFlag("turnos", true);
     const res = await supervisorService.getTurnos(token);
-    if (res.success) {
-      setTurnos(res.data);
-    } else {
-      showError(res.error, "No se pudieron cargar los turnos.");
-    }
+    if (res.success) setTurnos(res.data);
+    else showError(res.error, "No se pudieron cargar los turnos.");
     setLoadingFlag("turnos", false);
   }, [token]);
 
@@ -95,33 +90,42 @@ export default function TurnosApp() {
     if (!token) return;
     setLoadingFlag("choferes", true);
     const res = await supervisorService.getChoferes(token);
-    if (res.success) {
-      setChoferes(res.data);
-    } else {
-      showError(res.error, "No se pudieron cargar los choferes.");
-    }
+    if (res.success) setChoferes(res.data);
+    else showError(res.error, "No se pudieron cargar los choferes.");
     setLoadingFlag("choferes", false);
+  }, [token]);
+
+  const fetchCatalogo = useCallback(async () => {
+    if (!token) return;
+    setLoadingFlag("catalogo", true);
+    const res = await supervisorService.getCatalogoTurnos(token);
+    if (res.success) setCatalogoTurnos(res.data);
+    else setCatalogoTurnos([
+      { id: 1, nombre: "Mañana" },
+      { id: 2, nombre: "Tarde" },
+      { id: 3, nombre: "Noche" },
+    ]);
+    setLoadingFlag("catalogo", false);
   }, [token]);
 
   useEffect(() => {
     if (isSupervisor && token) {
       fetchTurnos();
       fetchChoferes();
+      fetchCatalogo();
     } else {
       setTurnos([]);
       setChoferes([]);
+      setCatalogoTurnos([]);
     }
-  }, [fetchTurnos, fetchChoferes, isSupervisor, token]);
+  }, [fetchTurnos, fetchChoferes, fetchCatalogo, isSupervisor, token]);
 
   const fetchMisTurnos = useCallback(async () => {
     if (!token) return;
     setLoadingFlag("misTurnos", true);
     const res = await choferService.getMisTurnos(token);
-    if (res.success) {
-      setMisTurnos(res.data);
-    } else {
-      showError(res.error, "No se pudieron cargar tus turnos.");
-    }
+    if (res.success) setMisTurnos(res.data);
+    else showError(res.error, "No se pudieron cargar tus turnos.");
     setLoadingFlag("misTurnos", false);
   }, [token]);
 
@@ -137,9 +141,7 @@ export default function TurnosApp() {
         console.error("Error al procesar SSE", error);
       }
     });
-    source.onerror = (error) => {
-      console.error("Error SSE", error);
-    };
+    source.onerror = (error) => console.error("Error SSE", error);
     eventSourceRef.current = source;
   }, [token]);
 
@@ -153,9 +155,7 @@ export default function TurnosApp() {
     }
   }, [fetchMisTurnos, isChofer, startEventStream, token]);
 
-  const handleRegister = async (
-    payload: RegisterPayload
-  ): Promise<OperationResult> => {
+  const handleRegister = async (payload: RegisterPayload): Promise<OperationResult> => {
     const res = await turnosAuthService.register(payload);
     if (res.success) {
       setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
@@ -165,9 +165,7 @@ export default function TurnosApp() {
     return { success: false, error: res.error };
   };
 
-  const handleLogin = async (
-    payload: LoginPayload
-  ): Promise<OperationResult> => {
+  const handleLogin = async (payload: LoginPayload): Promise<OperationResult> => {
     const res = await turnosAuthService.login(payload);
     if (res.success) {
       setMessage("Inicio de sesión exitoso.");
@@ -189,9 +187,7 @@ export default function TurnosApp() {
     setMessage("Sesión cerrada.");
   };
 
-  const handleCreateChofer = async (
-    payload: CreateChoferPayload
-  ): Promise<OperationResult> => {
+  const handleCreateChofer = async (payload: CreateChoferPayload): Promise<OperationResult> => {
     const res = await supervisorService.createChofer(payload, token);
     if (res.success) {
       setMessage("Chofer creado exitosamente.");
@@ -202,10 +198,7 @@ export default function TurnosApp() {
     return { success: false, error: res.error };
   };
 
-  const handleUpdateTurno = async (
-    turnoId: number,
-    payload: UpdateTurnoPayload
-  ): Promise<OperationResult> => {
+  const handleUpdateTurno = async (turnoId: number, payload: UpdateTurnoPayload): Promise<OperationResult> => {
     const res = await supervisorService.updateTurno(turnoId, payload, token);
     if (res.success) {
       setMessage("Turno actualizado.");
@@ -216,9 +209,10 @@ export default function TurnosApp() {
     return { success: false, error: res.error };
   };
 
-  const handleDeleteTurno = async (turnoId: number) => {
+  // 👇 Arreglo: debe recibir TurnoAsignado (no id), y usar turno.id
+  const handleDeleteTurno = async (turno: TurnoAsignado) => {
     if (!window.confirm("¿Seguro que deseas eliminar este turno?")) return;
-    const res = await supervisorService.deleteTurno(turnoId, token);
+    const res = await supervisorService.deleteTurno(turno.id, token);
     if (res.success) {
       setMessage("Turno eliminado.");
       fetchTurnos();
@@ -227,10 +221,7 @@ export default function TurnosApp() {
     }
   };
 
-  const handleAssignTurno = async (
-    choferId: number,
-    payload: AssignTurnoPayload
-  ): Promise<OperationResult> => {
+  const handleAssignTurno = async (choferId: number, payload: AssignTurnoPayload): Promise<OperationResult> => {
     const res = await supervisorService.assignTurno(choferId, payload, token);
     if (res.success) {
       setMessage("Turno asignado correctamente.");
@@ -241,10 +232,7 @@ export default function TurnosApp() {
     return { success: false, error: res.error };
   };
 
-  const handleUpdateChofer = async (
-    choferId: number,
-    payload: UpdateChoferPayload
-  ): Promise<OperationResult> => {
+  const handleUpdateChofer = async (choferId: number, payload: UpdateChoferPayload): Promise<OperationResult> => {
     const res = await supervisorService.updateChofer(choferId, payload, token);
     if (res.success) {
       setMessage("Chofer actualizado.");
@@ -269,9 +257,7 @@ export default function TurnosApp() {
   let bodyContent: ReactNode;
 
   if (loading.auth) {
-    bodyContent = (
-      <p className="text-sm text-gray-600">Verificando sesión...</p>
-    );
+    bodyContent = <p className="text-sm text-gray-600">Verificando sesión...</p>;
   } else if (isSupervisor) {
     bodyContent = (
       <>
@@ -294,37 +280,24 @@ export default function TurnosApp() {
   } else if (isChofer) {
     bodyContent = (
       <>
-        <ChoferPanel
-          turnos={misTurnos}
-          loading={loading.misTurnos}
-          onLogout={handleLogout}
-        />
+        <ChoferPanel turnos={misTurnos} loading={loading.misTurnos} onLogout={handleLogout} />
         <ResponseMessage message={message} />
       </>
     );
   } else {
     bodyContent = (
       <>
-        <p className="rounded border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm text-yellow-900">
+        <p className="px-4 py-2 text-sm text-yellow-900 border border-yellow-200 rounded bg-yellow-50">
           Tu rol aún no tiene un panel asignado.
         </p>
-        <button
-          onClick={handleLogout}
-          className="rounded bg-red-600 px-4 py-2 text-white"
-        >
-          Cerrar sesión
-        </button>
       </>
     );
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 pt-32 pb-16  space-y-6 p-6">
+    <div className="flex flex-col max-w-5xl gap-6 p-6 px-4 pt-32 pb-16 mx-auto space-y-6">
       <header>
         <h1 className="text-3xl font-bold">Sistema de turnos</h1>
-        <p className="text-sm text-gray-600">
-          Gestiona supervisores y choferes desde una interfaz React modular.
-        </p>
       </header>
 
       {bodyContent}
@@ -333,6 +306,8 @@ export default function TurnosApp() {
         turno={turnoToEdit}
         onClose={() => setTurnoToEdit(null)}
         onSave={handleUpdateTurno}
+        catalogoTurnos={catalogoTurnos}
+        loadingCatalogo={loading.catalogo}
       />
 
       <UpdateChoferModal
@@ -345,6 +320,8 @@ export default function TurnosApp() {
         chofer={choferToAssign}
         onClose={() => setChoferToAssign(null)}
         onAssign={handleAssignTurno}
+        catalogoTurnos={catalogoTurnos}
+        loadingCatalogo={loading.catalogo}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
 import Home from "../view/home/Home";
@@ -10,8 +10,7 @@ import { About } from "../view/home/About";
 import TurnosApp from "../view/turnos/TurnosApp";
 import Header from "../components/Navbar";
 
-// Supervisor
-import DashboardSupervisor from "./supervisor/DasboardSupervisor";
+import DashboardSupervisor from "./supervisor/DashboardSupervisor";
 import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
 import ListaLineas from "./supervisor/Lineas/ListaLineas";
 import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
@@ -19,6 +18,9 @@ import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 import GestionTurnos from "./supervisor/Turnos/GestionTurnos";
 
 function AppContent() {
+  const { pathname } = useLocation();
+  const hideHeader = pathname.startsWith("/supervisor");
+
   const publicRoutes = [
     { path: "/", element: <Home /> },
     { path: "/login", element: <Login /> },
@@ -30,7 +32,6 @@ function AppContent() {
     { path: "/dashboard", element: <Dashboard /> },
     { path: "/turnos", element: <TurnosApp /> },
 
-    // Grupo de rutas del supervisor (layout + subrutas)
     {
       path: "/supervisor",
       element: <SupervisorLayout />,
@@ -46,19 +47,18 @@ function AppContent() {
 
   return (
     <>
+      {!hideHeader && <Header />}
+
       <Routes>
-        {/* RUTAS PÚBLICAS */}
         <Route element={<PublicRouter />}>
           {publicRoutes.map(({ path, element }) => (
             <Route key={path} path={path} element={element} />
           ))}
         </Route>
 
-        {/* RUTAS PRIVADAS */}
         <Route element={<PrivateRouter />}>
           {privateRoutes.map(({ path, element, children }) =>
             children ? (
-              // Rutas anidadas (ej: supervisor)
               <Route key={path} path={path} element={element}>
                 {children.map(({ path: childPath, element: childEl, index }) =>
                   index ? (
@@ -83,7 +83,6 @@ function AppContent() {
 export const AppRouter = () => (
   <Suspense fallback={<div>Loading...</div>}>
     <BrowserRouter>
-      <Header />
       <AppContent />
     </BrowserRouter>
   </Suspense>

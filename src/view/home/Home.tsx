@@ -5,7 +5,7 @@ import { FooterEmpresa } from '../../components/Home/FooterEmpresa'
 
 const Home: React.FC = () => (
     
-  <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-50 flex flex-col">
+  <div className="flex flex-col min-h-screen bg-linear-to-br from-blue-100 to-green-50">
     <BienvenidaHero />
     <Caracteristicas />
     <FooterEmpresa />

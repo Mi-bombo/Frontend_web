@@ -12,9 +12,9 @@ type Props = {
   choferes: Chofer[];
   loadingTurnos?: boolean;
   loadingChoferes?: boolean;
-  onLogout: () => void;
+  onLogout?: () => void;
   onEditTurno: (turno: TurnoAsignado) => void;
-  onDeleteTurno: (id: number) => void;
+  onDeleteTurno: (turno: TurnoAsignado) => void; 
   onAssignTurno: (chofer: Chofer) => void;
   onEditChofer: (chofer: Chofer) => void;
   onDeleteChofer: (id: number) => void;
@@ -28,7 +28,6 @@ export function SupervisorPanel({
   choferes,
   loadingTurnos,
   loadingChoferes,
-  onLogout,
   onEditTurno,
   onDeleteTurno,
   onAssignTurno,
@@ -37,17 +36,7 @@ export function SupervisorPanel({
   onCreateChofer,
 }: Props) {
   return (
-    <section className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Panel del supervisor</h2>
-        <button
-          onClick={onLogout}
-          className="rounded bg-red-600 px-4 py-2 text-white"
-        >
-          Cerrar sesión
-        </button>
-      </div>
-
+    <section className="p-6 space-y-6 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <h3 className="mb-2 text-lg font-semibold">Turnos asignados</h3>

@@ -5,10 +5,9 @@ import { SupervisorDataProvider } from "./SupervisorDataProvider";
 export default function SupervisorLayout() {
   return (
     <SupervisorDataProvider>
-      <div className="mx-auto flex min-h-screen pt-16">
+      <div className="flex min-h-screen bg-gray-100">
         <SidebarSupervisor />
-
-        <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
+        <main className="flex-1 p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>
