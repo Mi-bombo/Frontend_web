@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usersService } from "../../services/user.service";
+import { authenticated } from "../../context/AppContext";
 
 export function useRegister() {
   const navigate = useNavigate();
   // Llamar al hook en el nivel superior (reglas de Hooks)
-  const { registerUser } = usersService();
+  const ctx = authenticated();
+  const registerUser = ctx?.registerUser!;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

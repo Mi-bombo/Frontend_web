@@ -1,25 +1,12 @@
-
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { authenticated } from "../context/AppContext";
 
 export default function PrivateRouter() {
-  const ctx = authenticated();
-  const user = (ctx as any)?.user?.user;
-  const loading = (ctx as any)?.loading;
-  const location = useLocation();
+  const ctx: any = authenticated?.();
+  const session = ctx?.user;
+  const token = session?.token ?? ctx?.token ?? localStorage.getItem("token");
+  const rawUser = session?.user ?? session?.User ?? null;
+  const isLoggedIn = !!token && !!rawUser;
 
-  if (loading) return null;
-
-  if (!user) return <Navigate to="/login" replace />;
-
-  const role = user?.role || "default";
-
-  if(
-    role!== "supervisor" &&
-    location.pathname.startsWith("/supervisor")
-  ) {
-    return <Navigate to="/dashboard" replace/>
-  }
-
-  return <Outlet />;
+  return isLoggedIn ? <Outlet /> : <Navigate to="/login" replace />;
 }

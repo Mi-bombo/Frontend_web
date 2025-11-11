@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usersService } from "../../services/user.service";
+import { authenticated } from "../../context/AppContext";
 
 export function useLogin() {
   const navigate = useNavigate();
   // Llamada al hook al nivel superior (reglas de Hooks)
-  const { login } = usersService();
+  const ctx = authenticated();
+  const login = ctx?.login!;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
