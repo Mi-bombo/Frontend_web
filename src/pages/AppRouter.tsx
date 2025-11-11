@@ -1,52 +1,89 @@
 import { Suspense } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
-import LandingPages from "./LandingPages";
 import Home from "../view/home/Home";
-import Header from "../components/Header";
+import Login from "../view/auth/Login";
+import Register from "../view/auth/Register";
+import { Dashboard } from "../view/home/dashboard";
+import { About } from "../view/home/About";
+import TurnosApp from "../view/turnos/TurnosApp";
+import Header from "../components/Navbar";
 
-
-
+import DashboardSupervisor from "./supervisor/DashboardSupervisor";
+import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
+import ListaLineas from "./supervisor/Lineas/ListaLineas";
+import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
+import SupervisorLayout from "../view/supervisor/SupervisorLayout";
+import GestionTurnos from "./supervisor/Turnos/GestionTurnos";
 
 function AppContent() {
-    // const { user } = authenticated();
-    const location = useLocation();
+  const { pathname } = useLocation();
+  const hideHeader = pathname.startsWith("/supervisor");
 
-    const hideBotPaths = ["/login", "/registro"];
-    const shouldShowBot = !hideBotPaths.includes(location.pathname);
+  const publicRoutes = [
+    { path: "/", element: <Home /> },
+    { path: "/login", element: <Login /> },
+    { path: "/registro", element: <Register /> },
+    { path: "/about", element: <About /> },
+  ];
 
-    return (
-        <>
-            <Header />
-            <Routes>
-                <Route element={<LandingPages />}>
-                    {/* <Route path="/" element={<Home />} /> */}
-                    {/* <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="*" element={<PageForDefault />} /> */}
-                </Route>
+  const privateRoutes = [
+    { path: "/dashboard", element: <Dashboard /> },
+    { path: "/turnos", element: <TurnosApp /> },
 
-                <Route > {/* element={<PublicRouter />} */}
-                    <Route path="/" element={<Home />} />
-                    {/* <Route path="/login" element={<Login />} /> */}
-                </Route>
+    {
+      path: "/supervisor",
+      element: <SupervisorLayout />,
+      children: [
+        { index: true, element: <DashboardSupervisor /> },
+        { path: "usuarios", element: <ListaUsuarios /> },
+        { path: "lineas", element: <ListaLineas /> },
+        { path: "turnos", element: <GestionTurnos /> },
+        { path: "obstrucciones", element: <PanelObstrucciones /> },
+      ],
+    },
+  ];
 
-                <Route element={<PrivateRouter />}>
-                    {/* Aquí van las vistas privadas */}
-                </Route>
-            </Routes>
-            {/* {user ? <Footer /> : ""}
-            {shouldShowBot && <Bot />} */}
-        </>
-    );
-};
+  return (
+    <>
+      {!hideHeader && <Header />}
+
+      <Routes>
+        <Route element={<PublicRouter />}>
+          {publicRoutes.map(({ path, element }) => (
+            <Route key={path} path={path} element={element} />
+          ))}
+        </Route>
+
+        <Route element={<PrivateRouter />}>
+          {privateRoutes.map(({ path, element, children }) =>
+            children ? (
+              <Route key={path} path={path} element={element}>
+                {children.map(({ path: childPath, element: childEl, index }) =>
+                  index ? (
+                    <Route key="index" index element={childEl} />
+                  ) : (
+                    <Route key={childPath} path={childPath} element={childEl} />
+                  )
+                )}
+              </Route>
+            ) : (
+              <Route key={path} path={path} element={element} />
+            )
+          )}
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  );
+}
 
 export const AppRouter = () => (
-    <Suspense fallback={<div>Loading...</div>}>
-        <BrowserRouter>
-            <AppContent />
-        </BrowserRouter>
-    </Suspense>
+  <Suspense fallback={<div>Loading...</div>}>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  </Suspense>
 );
-
-
