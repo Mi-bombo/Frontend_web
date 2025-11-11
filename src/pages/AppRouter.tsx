@@ -1,5 +1,11 @@
 import { Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import PrivateRouter from "./PrivateRouter";
 import PublicRouter from "./PublicRouter";
 import Home from "../view/home/Home";
@@ -12,10 +18,11 @@ import Header from "../components/Navbar";
 
 import DashboardSupervisor from "./supervisor/DashboardSupervisor";
 import ListaUsuarios from "./supervisor/Usuarios/ListaUsuarios";
-import ListaLineas from "./supervisor/Lineas/ListaLineas";
-import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
+import { CrudLineas } from "./supervisor/Lineas/CrudLineas";
+
 import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 import GestionTurnos from "./supervisor/Turnos/GestionTurnos";
+import CrudObstruccion from "./supervisor/Obstrucciones/crudObstruccion";
 
 function AppContent() {
   const { pathname } = useLocation();
@@ -26,6 +33,7 @@ function AppContent() {
     { path: "/login", element: <Login /> },
     { path: "/registro", element: <Register /> },
     { path: "/about", element: <About /> },
+    { path: "/lin", element: <CrudLineas /> },
   ];
 
   const privateRoutes = [
@@ -36,11 +44,11 @@ function AppContent() {
       path: "/supervisor",
       element: <SupervisorLayout />,
       children: [
+        { path: "turnos", element: <GestionTurnos /> },
         { index: true, element: <DashboardSupervisor /> },
         { path: "usuarios", element: <ListaUsuarios /> },
-        { path: "lineas", element: <ListaLineas /> },
-        { path: "turnos", element: <GestionTurnos /> },
-        { path: "obstrucciones", element: <PanelObstrucciones /> },
+        { path: "lineas", element: <CrudLineas /> },
+        { path: "obstrucciones", element: <CrudObstruccion /> },
       ],
     },
   ];

@@ -12,10 +12,22 @@ type Obstruccion = {
 };
 
 const getTurnoNombre = (t: any): string =>
-  t?.nombre_turno ?? t?.turno_nombre ?? t?.turnoName ?? t?.nombreTurno ?? t?.turno?.nombre ?? t?.turno ?? "";
+  t?.nombre_turno ??
+  t?.turno_nombre ??
+  t?.turnoName ??
+  t?.nombreTurno ??
+  t?.turno?.nombre ??
+  t?.turno ??
+  "";
 
 const getChoferNombre = (t: any): string =>
-  t?.nombre_chofer ?? t?.chofer_nombre ?? t?.choferName ?? t?.nombreChofer ?? t?.chofer?.nombre ?? t?.usuario?.nombre ?? "";
+  t?.nombre_chofer ??
+  t?.chofer_nombre ??
+  t?.choferName ??
+  t?.nombreChofer ??
+  t?.chofer?.nombre ??
+  t?.usuario?.nombre ??
+  "";
 
 const diaDesdeFecha = (yyyyMMdd?: string): string => {
   if (!yyyyMMdd) return "";
@@ -31,13 +43,38 @@ const getDia = (t: any): string => {
   const raw = t?.dia ?? t?.day ?? t?.dia_semana ?? "";
   const s = String(raw).toLowerCase();
   if (!s) return "";
-  if (s.startsWith("lun") || s === "1" || s === "monday" || s === "mon") return "Lun";
-  if (s.startsWith("mar") || s === "2" || s === "tuesday" || s === "tue") return "Mar";
-  if (s.startsWith("mie") || s.startsWith("mié") || s === "3" || s === "wednesday" || s === "wed") return "Mie";
-  if (s.startsWith("jue") || s === "4" || s === "thursday" || s === "thu") return "Jue";
-  if (s.startsWith("vie") || s === "5" || s === "friday" || s === "fri") return "Vie";
-  if (s.startsWith("sab") || s.startsWith("sáb") || s === "6" || s === "saturday" || s === "sat") return "Sab";
-  if (s.startsWith("dom") || s === "0" || s === "7" || s === "sunday" || s === "sun") return "Dom";
+  if (s.startsWith("lun") || s === "1" || s === "monday" || s === "mon")
+    return "Lun";
+  if (s.startsWith("mar") || s === "2" || s === "tuesday" || s === "tue")
+    return "Mar";
+  if (
+    s.startsWith("mie") ||
+    s.startsWith("mié") ||
+    s === "3" ||
+    s === "wednesday" ||
+    s === "wed"
+  )
+    return "Mie";
+  if (s.startsWith("jue") || s === "4" || s === "thursday" || s === "thu")
+    return "Jue";
+  if (s.startsWith("vie") || s === "5" || s === "friday" || s === "fri")
+    return "Vie";
+  if (
+    s.startsWith("sab") ||
+    s.startsWith("sáb") ||
+    s === "6" ||
+    s === "saturday" ||
+    s === "sat"
+  )
+    return "Sab";
+  if (
+    s.startsWith("dom") ||
+    s === "0" ||
+    s === "7" ||
+    s === "sunday" ||
+    s === "sun"
+  )
+    return "Dom";
   return raw;
 };
 
@@ -97,15 +134,22 @@ export default function PanelObstrucciones() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Panel de obstrucciones</h1>
-          <p className="text-sm text-slate-500">Se listan los turnos para monitorear posibles incidencias.</p>
+          <p className="text-sm text-slate-500">
+            Se listan los turnos para monitorear posibles incidencias.
+          </p>
         </div>
+        <button className="bg-blue-600 text-white font-semibold rounded-3xl p-2">
+          Notificar obstrucción
+        </button>
 
         <div className="flex items-center gap-2">
           <div className="flex overflow-x-auto bg-white border rounded-full">
             {(["Todas", "Alta", "Media", "Baja"] as const).map((s) => (
               <button
                 key={s}
-                className={`px-3 py-1.5 text-sm ${sev === s ? "bg-slate-100 font-semibold" : ""}`}
+                className={`px-3 py-1.5 text-sm ${
+                  sev === s ? "bg-slate-100 font-semibold" : ""
+                }`}
                 onClick={() => setSev(s)}
               >
                 {s}
@@ -124,7 +168,9 @@ export default function PanelObstrucciones() {
       </div>
 
       {error && (
-        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">{error}</p>
+        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">
+          {error}
+        </p>
       )}
 
       <div className="overflow-hidden bg-white rounded-lg shadow">

@@ -93,7 +93,11 @@ export default function GestionTurnos() {
     payload: AssignTurnoPayload
   ): Promise<OperationResult> => {
     ensureAuth();
-    const result = await supervisorService.assignTurno(choferId, payload, token);
+    const result = await supervisorService.assignTurno(
+      choferId,
+      payload,
+      token
+    );
     if (result.success) {
       setMessage("Turno asignado correctamente.");
       await refreshTurnos();
@@ -108,7 +112,11 @@ export default function GestionTurnos() {
     payload: UpdateChoferPayload
   ): Promise<OperationResult> => {
     ensureAuth();
-    const result = await supervisorService.updateChofer(choferId, payload, token);
+    const result = await supervisorService.updateChofer(
+      choferId,
+      payload,
+      token
+    );
     if (result.success) {
       setMessage("Chofer actualizado.");
       await refreshChoferes();
@@ -174,7 +182,9 @@ export default function GestionTurnos() {
             className="px-4 py-2 text-sm font-semibold text-white transition-colors bg-blue-600 rounded-full shadow cursor-pointer hover:bg-blue-700 disabled:opacity-50 disabled:cursor-default"
             disabled={loadingChoferes || loadingTurnos}
           >
-            {loadingChoferes || loadingTurnos ? "Actualizando..." : "Actualizar todo"}
+            {loadingChoferes || loadingTurnos
+              ? "Actualizando..."
+              : "Actualizar todo"}
           </button>
         </div>
       </div>

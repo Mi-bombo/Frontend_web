@@ -25,13 +25,38 @@ const getDia = (t: any): string => {
   const raw = t?.dia ?? t?.day ?? t?.dia_semana ?? "";
   const s = String(raw).toLowerCase();
   if (!s) return "";
-  if (s.startsWith("lun") || s === "1" || s === "monday" || s === "mon") return "Lun";
-  if (s.startsWith("mar") || s === "2" || s === "tuesday" || s === "tue") return "Mar";
-  if (s.startsWith("mie") || s.startsWith("mié") || s === "3" || s === "wednesday" || s === "wed") return "Mie";
-  if (s.startsWith("jue") || s === "4" || s === "thursday" || s === "thu") return "Jue";
-  if (s.startsWith("vie") || s === "5" || s === "friday" || s === "fri") return "Vie";
-  if (s.startsWith("sab") || s.startsWith("sáb") || s === "6" || s === "saturday" || s === "sat") return "Sab";
-  if (s.startsWith("dom") || s === "0" || s === "7" || s === "sunday" || s === "sun") return "Dom";
+  if (s.startsWith("lun") || s === "1" || s === "monday" || s === "mon")
+    return "Lun";
+  if (s.startsWith("mar") || s === "2" || s === "tuesday" || s === "tue")
+    return "Mar";
+  if (
+    s.startsWith("mie") ||
+    s.startsWith("mié") ||
+    s === "3" ||
+    s === "wednesday" ||
+    s === "wed"
+  )
+    return "Mie";
+  if (s.startsWith("jue") || s === "4" || s === "thursday" || s === "thu")
+    return "Jue";
+  if (s.startsWith("vie") || s === "5" || s === "friday" || s === "fri")
+    return "Vie";
+  if (
+    s.startsWith("sab") ||
+    s.startsWith("sáb") ||
+    s === "6" ||
+    s === "saturday" ||
+    s === "sat"
+  )
+    return "Sab";
+  if (
+    s.startsWith("dom") ||
+    s === "0" ||
+    s === "7" ||
+    s === "sunday" ||
+    s === "sun"
+  )
+    return "Dom";
   return raw;
 };
 
@@ -99,13 +124,17 @@ export default function ListaLineas() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Líneas y turnos</h1>
-          <p className="text-sm text-slate-500">Resumen armado con los turnos asignados.</p>
+          <p className="text-sm text-slate-500">
+            Resumen armado con los turnos asignados.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex overflow-x-auto bg-white border rounded-full">
             <button
-              className={`px-3 py-1.5 text-sm ${dayFilter === "Todos" ? "bg-slate-100 font-semibold" : ""}`}
+              className={`px-3 py-1.5 text-sm ${
+                dayFilter === "Todos" ? "bg-slate-100 font-semibold" : ""
+              }`}
               onClick={() => setDayFilter("Todos")}
             >
               Todos
@@ -113,7 +142,9 @@ export default function ListaLineas() {
             {DAY_CHIPS.map((d) => (
               <button
                 key={d}
-                className={`px-3 py-1.5 text-sm ${dayFilter === d ? "bg-slate-100 font-semibold" : ""}`}
+                className={`px-3 py-1.5 text-sm ${
+                  dayFilter === d ? "bg-slate-100 font-semibold" : ""
+                }`}
                 onClick={() => setDayFilter(d)}
               >
                 {d}
@@ -132,7 +163,9 @@ export default function ListaLineas() {
       </div>
 
       {error && (
-        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">{error}</p>
+        <p className="p-3 text-sm text-red-700 border border-red-100 rounded-lg bg-red-50">
+          {error}
+        </p>
       )}
 
       <div className="overflow-hidden bg-white rounded-lg shadow">
@@ -148,11 +181,15 @@ export default function ListaLineas() {
           <tbody>
             {loadingTurnos ? (
               <tr>
-                <td colSpan={4} className="p-4 text-center text-slate-500">Cargando líneas…</td>
+                <td colSpan={4} className="p-4 text-center text-slate-500">
+                  Cargando líneas…
+                </td>
               </tr>
             ) : paginated.length === 0 ? (
               <tr>
-                <td colSpan={4} className="p-8 text-center text-slate-500">No hay turnos para mostrar.</td>
+                <td colSpan={4} className="p-8 text-center text-slate-500">
+                  No hay turnos para mostrar.
+                </td>
               </tr>
             ) : (
               paginated.map((l) => (
@@ -162,7 +199,10 @@ export default function ListaLineas() {
                   <td className="p-3">
                     <div className="flex flex-wrap gap-2">
                       {l.dias.map((dia) => (
-                        <span key={dia} className="px-3 py-1 text-xs font-semibold text-blue-700 rounded-full bg-blue-50">
+                        <span
+                          key={dia}
+                          className="px-3 py-1 text-xs font-semibold text-blue-700 rounded-full bg-blue-50"
+                        >
                           {dia}
                         </span>
                       ))}
@@ -200,7 +240,10 @@ export default function ListaLineas() {
         size="lg"
         footer={
           <div className="flex justify-end">
-            <button className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50" onClick={() => setOpenLinea(null)}>
+            <button
+              className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
+              onClick={() => setOpenLinea(null)}
+            >
               Cerrar
             </button>
           </div>
@@ -211,7 +254,10 @@ export default function ListaLineas() {
             <div className="text-sm text-slate-600">
               Días:{" "}
               {openLinea.dias.map((d) => (
-                <span key={d} className="mr-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold">
+                <span
+                  key={d}
+                  className="mr-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold"
+                >
                   {d}
                 </span>
               ))}
@@ -227,7 +273,10 @@ export default function ListaLineas() {
                 </thead>
                 <tbody>
                   {turnosDeLinea(openLinea.nombre).map((t: any, i) => (
-                    <tr key={t.id ?? `${openLinea.nombre}-${i}`} className="border-t">
+                    <tr
+                      key={t.id ?? `${openLinea.nombre}-${i}`}
+                      className="border-t"
+                    >
                       <td className="p-2">{getChoferNombre(t)}</td>
                       <td className="p-2">{getDia(t) || "-"}</td>
                     </tr>

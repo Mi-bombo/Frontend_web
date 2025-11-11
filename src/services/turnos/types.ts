@@ -75,6 +75,21 @@ export interface TurnoCatalogo {
   nombre: string;
 }
 
+export type LineaAfectada = {
+  lineaId: number;
+  lineaNombre: string;
+  porcentajeTramoAfectado: number;
+};
+
+export type ObstruccionAlerta = {
+  obstruccionId: number;
+  titulo: string;
+  descripcion?: string;
+  mensaje: string;
+  lineas: LineaAfectada[];
+  recibidaEn: string;
+};
+
 export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: string; raw?: unknown };

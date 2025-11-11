@@ -1,10 +1,11 @@
 import { useMemo } from "react";
-import type { TurnoChofer } from "../../services/turnos/types";
+import type { ObstruccionAlerta, TurnoChofer } from "../../services/turnos/types";
 
 type Props = {
-  turnos: TurnoChofer[];   
+  turnos: TurnoChofer[];
   loading?: boolean;
-  onLogout: () => void;
+  alerts?: ObstruccionAlerta[];
+  onDismissAlert?: (id: number) => void;
 };
 
 const isISO = (s?: string) => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -34,7 +35,7 @@ type TurnoUI = {
   when?: number; // epoch ms
 };
 
-export function ChoferPanel({ turnos, loading }: Props) {
+export function ChoferPanel({ turnos, loading, alerts = [], onDismissAlert }: Props) {
   const { lista, proximo } = useMemo(() => {
     const norm: TurnoUI[] = (turnos || []).map((t, i) => {
       const fecha = (t as any).fecha as string | undefined;
@@ -66,6 +67,55 @@ export function ChoferPanel({ turnos, loading }: Props) {
       <header className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Panel del Chofer</h2>
       </header>
+
+      {alerts.length > 0 && (
+        <div className="space-y-3">
+          {alerts.map((alerta) => (
+            <article
+              key={alerta.obstruccionId}
+              className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                    Desvío obligatorio
+                  </p>
+                  <h3 className="text-base font-semibold text-amber-900">
+                    {alerta.titulo}
+                  </h3>
+                </div>
+                {onDismissAlert && (
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-amber-700 hover:underline"
+                    onClick={() => onDismissAlert(alerta.obstruccionId)}
+                  >
+                    Cerrar
+                  </button>
+                )}
+              </div>
+              <p className="mt-2 text-sm">
+                {alerta.mensaje}
+              </p>
+              {alerta.lineas.length > 0 && (
+                <ul className="mt-3 space-y-1 text-xs text-amber-800">
+                  {alerta.lineas.map((linea) => (
+                    <li key={linea.lineaId} className="flex items-center justify-between">
+                      <span>{linea.lineaNombre}</span>
+                      <span className="font-semibold">
+                        {Math.round(linea.porcentajeTramoAfectado * 100)}% afectado
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-2 text-[11px] text-amber-600">
+                Recibido: {new Date(alerta.recibidaEn).toLocaleString()}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="p-4 border rounded-lg animate-pulse">
