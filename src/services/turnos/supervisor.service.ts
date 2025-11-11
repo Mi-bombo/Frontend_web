@@ -7,7 +7,7 @@ import type {
   TurnoCatalogo,
 } from "./types";
 
-const API = (import.meta as any)?.env?.VITE_API_URL ?? "http://127.0.0.1:2001";
+const API = (import.meta as any)?.env?.VITE_SUPERVISOR_API ?? "http://127.0.0.1:2000";
 
 type ServiceResult<T = unknown> =
   Promise<{ success: true; data: T } | { success: false; error: string; raw?: unknown }>;

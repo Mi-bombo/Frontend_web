@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BASE = (import.meta.env.VITE_AUTH_API ?? "http://127.0.0.1:2000/auth")
+const BASE = (import.meta.env.VITE_AUTH_API ?? "http://127.0.0.1:4000/auth")
   .replace(/\/+$/, "");
 
 export const Url = `${BASE}/`;

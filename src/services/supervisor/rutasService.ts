@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BASE_URL = "http://localhost:2000/lineas";
+const BASE_URL = import.meta.env.VITE_LINEAS_API ?? "http://localhost:2000/lineas";
 
 export type ParadaCoords = { coords: [number, number] };
 export type TrayectoMulti = number[][][];

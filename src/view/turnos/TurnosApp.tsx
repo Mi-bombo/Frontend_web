@@ -132,16 +132,40 @@ export default function TurnosApp() {
   const startEventStream = useCallback(() => {
     if (!token) return;
     eventSourceRef.current?.close();
+    
+    console.log("🔌 Conectando a SSE stream...");
     const source = turnosAuthService.openStream(token);
+    
     source.addEventListener("turno-creado", (event) => {
       try {
         const data = JSON.parse((event as MessageEvent).data);
+        console.log("✅ Evento turno-creado recibido:", data);
         setMisTurnos((prev) => [...prev, data]);
       } catch (error) {
-        console.error("Error al procesar SSE", error);
+        console.error("❌ Error al procesar SSE turno-creado:", error);
       }
     });
-    source.onerror = (error) => console.error("Error SSE", error);
+    
+    source.addEventListener("turno-actualizado", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data);
+        console.log("🔄 Evento turno-actualizado recibido:", data);
+        setMisTurnos((prev) =>
+          prev.map((t) => (t.id === data.id ? { ...t, ...data } : t))
+        );
+      } catch (error) {
+        console.error("❌ Error al procesar SSE turno-actualizado:", error);
+      }
+    });
+    
+    source.onopen = () => {
+      console.log("✅ Conexión SSE establecida");
+    };
+    
+    source.onerror = (error) => {
+      console.error("❌ Error SSE:", error);
+    };
+    
     eventSourceRef.current = source;
   }, [token]);
 

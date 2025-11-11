@@ -39,7 +39,7 @@ function AppContent() {
       children: [
         { index: true, element: <DashboardSupervisor /> },
         { path: "usuarios", element: <ListaUsuarios /> },
-        { path: "lineas", element: <ListaLineas /> },
+        { path: "lineas", element: <CrudLineas /> },
         { path: "turnos", element: <GestionTurnos /> },
         { path: "obstrucciones", element: <PanelObstrucciones /> },
       ],

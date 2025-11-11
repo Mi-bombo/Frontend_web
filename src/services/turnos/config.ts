@@ -1,5 +1,5 @@
 export const turnosApiConfig = {
-  authBaseUrl: import.meta.env.VITE_AUTH_API ?? "http://localhost:2000/auth",
+  authBaseUrl: import.meta.env.VITE_AUTH_API ?? "http://localhost:4000/auth",
   supervisorBaseUrl:
     import.meta.env.VITE_SUPERVISOR_API ?? "http://localhost:2000/supervisor",
   choferBaseUrl:
