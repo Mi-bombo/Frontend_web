@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import RutaModal from "./RutaModal";
 import type { TurnoChofer } from "../../services/turnos/types";
 
 type Props = {
   turnos: TurnoChofer[];   
   loading?: boolean;
   onLogout: () => void;
+  assignedLines?: Array<{ id: number; nombre: string }>;
 };
 
 const isISO = (s?: string) => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -34,7 +36,10 @@ type TurnoUI = {
   when?: number; // epoch ms
 };
 
-export function ChoferPanel({ turnos, loading }: Props) {
+export function ChoferPanel({ turnos, loading, assignedLines }: Props) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedLineaId, setSelectedLineaId] = useState<number | null>(null);
+
   const { lista, proximo } = useMemo(() => {
     const norm: TurnoUI[] = (turnos || []).map((t, i) => {
       const fecha = (t as any).fecha as string | undefined;
@@ -95,7 +100,24 @@ export function ChoferPanel({ turnos, loading }: Props) {
       )}
 
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Mis turnos</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="mb-2 text-lg font-semibold">Mis turnos</h3>
+        </div>
+
+        {/* Líneas asignadas (si existieran) */}
+  {assignedLines && assignedLines.length > 0 && (
+          <div className="p-3 mb-3 border rounded bg-slate-50">
+            <p className="text-sm font-medium text-slate-700 mb-2">Líneas asignadas</p>
+            <div className="flex flex-wrap gap-2">
+              {assignedLines.map((l: any) => (
+                <div key={l.id} className="flex items-center gap-2 px-3 py-1 text-sm bg-white border rounded">
+                  <span className="font-semibold">{l.nombre}</span>
+                  <button className="px-2 py-0.5 text-xs text-white bg-indigo-600 rounded" onClick={() => { setSelectedLineaId(l.id); setModalOpen(true); }}>Ver ruta</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <ul className="space-y-2">
@@ -150,6 +172,7 @@ export function ChoferPanel({ turnos, loading }: Props) {
           <p className="text-sm text-slate-600">Esperando asignaciones…</p>
         )}
       </div>
+      <RutaModal isOpen={modalOpen} lineaId={selectedLineaId} onClose={() => { setModalOpen(false); setSelectedLineaId(null); }} />
     </section>
   );
 }

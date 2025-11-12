@@ -9,6 +9,14 @@
 
 const API = (import.meta as any)?.env?.VITE_SUPERVISOR_API ?? "http://127.0.0.1:2000";
 
+// Base origin (host + port) to call other microservices on the same host.
+const API_BASE = (() => {
+  try {
+    return new URL(API).origin;
+  } catch {
+    return API;
+  }
+})();
 type ServiceResult<T = unknown> =
   Promise<{ success: true; data: T } | { success: false; error: string; raw?: unknown }>;
 
@@ -154,7 +162,7 @@ export const supervisorService = {
     // Hacemos un POST por cada línea para que el backend emita el evento `chofer-linea-asignada` por cada asignación.
     for (const lineaId of payload.lineas) {
       const body = JSON.stringify({ chofer_id: idUsuario, linea_id: lineaId });
-      const res = await fetch(`${API.replace(/\/supervisor|:\d+$/,'')}/chofer-lineas`, {
+      const res = await fetch(`${API_BASE}/chofer-lineas`, {
         method: "POST",
         headers: headers(token),
         body,
@@ -166,7 +174,7 @@ export const supervisorService = {
   
   async getLineasByChofer(idUsuario: number, token?: string): ServiceResult<Array<{ id: number; nombre: string }>> {
     // Nueva API: consultar asignaciones filtrando por choferId
-    const url = new URL(`${API.replace(/\/supervisor|:\d+$/,'')}/chofer-lineas`);
+    const url = new URL(`${API_BASE}/chofer-lineas`);
     url.searchParams.set('choferId', String(idUsuario));
     const res = await fetch(url.toString(), {
       method: "GET",

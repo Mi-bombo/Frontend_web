@@ -10,6 +10,7 @@ import type {
 type Props = {
   turnos: TurnoAsignado[];
   choferes: Chofer[];
+  assignedLines?: Record<number, Array<{ id: number; nombre: string }>>;
   loadingTurnos?: boolean;
   loadingChoferes?: boolean;
   onLogout?: () => void;
@@ -26,6 +27,7 @@ type Props = {
 export function SupervisorPanel({
   turnos,
   choferes,
+  assignedLines,
   loadingTurnos,
   loadingChoferes,
   onEditTurno,
@@ -61,6 +63,7 @@ export function SupervisorPanel({
               onAssign={onAssignTurno}
               onEdit={onEditChofer}
               onDelete={onDeleteChofer}
+              assignedLines={assignedLines}
             />
           )}
         </div>

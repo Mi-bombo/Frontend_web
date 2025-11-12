@@ -14,8 +14,6 @@ import type {
   AssignTurnoPayload,
   Chofer,
   CreateChoferPayload,
-  LoginPayload,
-  RegisterPayload,
   SessionResponse,
   TurnoAsignado,
   TurnoChofer,
@@ -40,6 +38,7 @@ export default function TurnosApp() {
   const [message, setMessage] = useState<string | null>(null);
   const [turnos, setTurnos] = useState<TurnoAsignado[]>([]);
   const [choferes, setChoferes] = useState<Chofer[]>([]);
+  const [assignedLines, setAssignedLines] = useState<Record<number, Array<{ id: number; nombre: string }>>>({});
   const [misTurnos, setMisTurnos] = useState<TurnoChofer[]>([]);
   const [catalogoTurnos, setCatalogoTurnos] = useState<TurnoCatalogo[]>([]);
   const [loading, setLoading] = useState(initialLoadingState);
@@ -95,6 +94,25 @@ export default function TurnosApp() {
     setLoadingFlag("choferes", false);
   }, [token]);
 
+  const fetchAssignedLinesForChofer = useCallback(
+    async (choferId: number) => {
+      if (!token) return;
+      const res = await supervisorService.getLineasByChofer(choferId, token);
+      if (res.success) {
+        setAssignedLines((prev) => ({ ...prev, [choferId]: res.data }));
+      }
+    },
+    [token]
+  );
+
+  const fetchAssignedLinesForAll = useCallback(async () => {
+    if (!token) return;
+    // fetch assignments for all choferes
+    for (const c of choferes) {
+      await fetchAssignedLinesForChofer(c.id);
+    }
+  }, [choferes, fetchAssignedLinesForChofer, token]);
+
   const fetchCatalogo = useCallback(async () => {
     if (!token) return;
     setLoadingFlag("catalogo", true);
@@ -119,6 +137,18 @@ export default function TurnosApp() {
       setCatalogoTurnos([]);
     }
   }, [fetchTurnos, fetchChoferes, fetchCatalogo, isSupervisor, token]);
+
+  // cuando la lista de choferes cambia, cargar sus asignaciones
+  useEffect(() => {
+    if (!isSupervisor || !token || choferes.length === 0) return;
+    (async () => {
+      try {
+        await fetchAssignedLinesForAll();
+      } catch (e) {
+        console.error("Error cargando asignaciones iniciales:", e);
+      }
+    })();
+  }, [choferes, fetchAssignedLinesForAll, isSupervisor, token]);
 
   const fetchMisTurnos = useCallback(async () => {
     if (!token) return;
@@ -157,6 +187,30 @@ export default function TurnosApp() {
         console.error("❌ Error al procesar SSE turno-actualizado:", error);
       }
     });
+
+    // Eventos relacionados a asignaciones de líneas
+    source.addEventListener("chofer-linea-asignada", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data);
+        console.log("🔔 Evento chofer-linea-asignada:", data);
+        // data should contain chofer_id or choferId
+        const choferId = data.chofer_id ?? data.choferId ?? data.idUsuario ?? null;
+        if (choferId) fetchAssignedLinesForChofer(Number(choferId));
+      } catch (error) {
+        console.error("Error procesando chofer-linea-asignada:", error);
+      }
+    });
+
+    source.addEventListener("lineas-asignadas", (event) => {
+      try {
+        const data = JSON.parse((event as MessageEvent).data);
+        console.log("🔔 Evento lineas-asignadas:", data);
+        const choferId = data.chofer_id ?? data.chofer?.id ?? data.idUsuario ?? null;
+        if (choferId) fetchAssignedLinesForChofer(Number(choferId));
+      } catch (error) {
+        console.error("Error procesando lineas-asignadas:", error);
+      }
+    });
     
     source.onopen = () => {
       console.log("✅ Conexión SSE establecida");
@@ -172,6 +226,8 @@ export default function TurnosApp() {
   useEffect(() => {
     if (isChofer && token) {
       fetchMisTurnos();
+      // cargar líneas asignadas del chofer actual
+      if (session?.User?.id) fetchAssignedLinesForChofer(Number(session.User.id));
       startEventStream();
     } else {
       eventSourceRef.current?.close();
@@ -179,26 +235,7 @@ export default function TurnosApp() {
     }
   }, [fetchMisTurnos, isChofer, startEventStream, token]);
 
-  const handleRegister = async (payload: RegisterPayload): Promise<OperationResult> => {
-    const res = await turnosAuthService.register(payload);
-    if (res.success) {
-      setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
-      return { success: true };
-    }
-    showError(res.error, "No se pudo completar el registro.");
-    return { success: false, error: res.error };
-  };
-
-  const handleLogin = async (payload: LoginPayload): Promise<OperationResult> => {
-    const res = await turnosAuthService.login(payload);
-    if (res.success) {
-      setMessage("Inicio de sesión exitoso.");
-      await refreshSession();
-      return { success: true };
-    }
-    showError(res.error, "No se pudo iniciar sesión.");
-    return { success: false, error: res.error };
-  };
+ 
 
   const handleLogout = async () => {
     await turnosAuthService.logout();
@@ -288,6 +325,7 @@ export default function TurnosApp() {
         <SupervisorPanel
           turnos={turnos}
           choferes={choferes}
+          assignedLines={assignedLines}
           loadingTurnos={loading.turnos}
           loadingChoferes={loading.choferes}
           onLogout={handleLogout}
@@ -304,7 +342,12 @@ export default function TurnosApp() {
   } else if (isChofer) {
     bodyContent = (
       <>
-        <ChoferPanel turnos={misTurnos} loading={loading.misTurnos} onLogout={handleLogout} />
+        <ChoferPanel
+          turnos={misTurnos}
+          loading={loading.misTurnos}
+          onLogout={handleLogout}
+          assignedLines={session?.User?.id ? assignedLines[Number(session.User.id)] : undefined}
+        />
         <ResponseMessage message={message} />
       </>
     );

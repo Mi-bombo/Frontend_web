@@ -43,7 +43,7 @@ function AppContent() {
         { path: "lineas", element: <CrudLineas /> },
         { path: "turnos", element: <GestionTurnos /> },
         { path: "obstrucciones", element: <PanelObstrucciones /> },
-        { path: "asignar-turnos", element: <AsignarTurno /> },
+        { path: "asignar-lineas", element: <AsignarTurno /> },
       ],
     },
   ];
