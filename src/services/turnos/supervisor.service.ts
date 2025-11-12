@@ -139,6 +139,7 @@ export const supervisorService = {
 
   async deleteChofer(id: number, token?: string): ServiceResult<void> {
     const res = await fetch(`${API}/supervisor/eliminar-chofer/${id}`, {
+      credentials: "include",
       method: "DELETE",
       headers: headers(token),
     });
