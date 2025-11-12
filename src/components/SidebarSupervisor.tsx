@@ -84,6 +84,14 @@ export default function SidebarSupervisor() {
         >
           <FiAlertTriangle /> Obstrucciones
         </NavLink>
+        <NavLink
+          to="/supervisor/asignar-turnos"
+          className={({ isActive }) =>
+            `${linkBase} ${isActive ? active : inactive}`
+          }
+        >
+          <FiList /> Asignar Turnos
+        </NavLink>
       </nav>
 
       <button

@@ -16,6 +16,7 @@ import { CrudLineas } from "./supervisor/Lineas/CrudLineas";
 import PanelObstrucciones from "./supervisor/Obstrucciones/PanelObstrucciones";
 import SupervisorLayout from "../view/supervisor/SupervisorLayout";
 import GestionTurnos from "./supervisor/Turnos/GestionTurnos";
+import AsignarTurno from "./supervisor/Asignacion/AsignarTurno";
 
 function AppContent() {
   const { pathname } = useLocation();
@@ -42,6 +43,7 @@ function AppContent() {
         { path: "lineas", element: <CrudLineas /> },
         { path: "turnos", element: <GestionTurnos /> },
         { path: "obstrucciones", element: <PanelObstrucciones /> },
+        { path: "asignar-turnos", element: <AsignarTurno /> },
       ],
     },
   ];

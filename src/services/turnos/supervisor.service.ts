@@ -1,4 +1,4 @@
-import type {
+    import type {
   AssignTurnoPayload,
   CreateChoferPayload,
   UpdateChoferPayload,
@@ -145,5 +145,37 @@ export const supervisorService = {
     });
     if (!res.ok) return fail(res, "No se pudo eliminar el chofer");
     return { success: true, data: undefined as void };
+  },
+  
+  // Asignar una o varias líneas a un chofer
+  async assignLineas(idUsuario: number, payload: { lineas: number[] }, token?: string): ServiceResult<void> {
+    if (!Array.isArray(payload?.lineas)) return { success: false, error: "Payload inválido: se espera un arreglo 'lineas'" };
+    // Nueva API: el microservicio expone un recurso `chofer-lineas` que crea una asignación por POST
+    // Hacemos un POST por cada línea para que el backend emita el evento `chofer-linea-asignada` por cada asignación.
+    for (const lineaId of payload.lineas) {
+      const body = JSON.stringify({ chofer_id: idUsuario, linea_id: lineaId });
+      const res = await fetch(`${API.replace(/\/supervisor|:\d+$/,'')}/chofer-lineas`, {
+        method: "POST",
+        headers: headers(token),
+        body,
+      });
+      if (!res.ok) return fail(res, "No se pudieron asignar las líneas");
+    }
+    return { success: true, data: undefined as void };
+  },
+  
+  async getLineasByChofer(idUsuario: number, token?: string): ServiceResult<Array<{ id: number; nombre: string }>> {
+    // Nueva API: consultar asignaciones filtrando por choferId
+    const url = new URL(`${API.replace(/\/supervisor|:\d+$/,'')}/chofer-lineas`);
+    url.searchParams.set('choferId', String(idUsuario));
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: headers(token),
+    });
+    if (!res.ok) return fail(res, "No se pudieron obtener las líneas asignadas");
+    const data = await res.json();
+    // la API devuelve objetos con detalles; mapeamos a {id, nombre} por compatibilidad con la UI
+    const mapped = (data || []).map((d: any) => ({ id: d.linea?.id ?? d.linea_id ?? d.id, nombre: d.linea?.nombre ?? d.linea_nombre ?? d.nombre ?? "" }));
+    return { success: true as const, data: mapped };
   },
 };
